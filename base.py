@@ -10,4 +10,14 @@ print(price_history.columns)
 
 print(price_history.index)
 
-price_history.plot.line(y="Close",use_index=True)   
+price_history.plot.line(y="Close",use_index=True) 
+plt.show()
+
+if 'Dividends' in price_history.columns:
+    del price_history['Dividends']
+    
+if 'Stock Splits' in price_history.columns:
+    del price_history['Stock Splits']
+
+price_history.plot.line(y="Close", use_index=True)
+plt.show()
