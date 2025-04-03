@@ -30,8 +30,29 @@ print(price_history[['Close', 'Returns']].tail(10)) #shows the percentage change
 import numpy as np
 import scipy.stats as stats
 
+#confidence interval and mean return
 mean_return = price_history['Returns'].mean()
 std_return = price_history['Returns'].std()
 conf_int = stats.norm.interval(0.95, loc=mean_return, scale=std_return/np.sqrt(len(price_history)))
 print("Mean Return:", mean_return)
 print("95% Confidence Interval:", conf_int)
+
+
+# return trend
+price_history.drop(columns=['Dividends', 'Stock Splits'], inplace= True, errors="ignore")
+price_history['Returns']=price_history['Close'].pct_change()
+price_history=price_history.dropna()
+
+
+# Don't recalculate returns again — just reuse what you already calculated
+# And no need to drop Dividends/Stock Splits again since already done
+
+# Plot Daily Return Trend
+plt.figure(figsize=(10, 4))
+price_history['Returns'].plot(title="Daily Returns Trend")
+plt.axhline(0, color='red', linestyle='--')  # Add reference line
+plt.xlabel("Date")
+plt.ylabel("Daily Return")
+plt.grid(True)
+plt.tight_layout()
+plt.show()
