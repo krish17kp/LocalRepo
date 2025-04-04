@@ -1,4 +1,4 @@
-import yfinance as yf  #yahoo finance api to download daily stock indices
+import yfinance as yf  
 import matplotlib.pyplot as plt
 ticker = yf.Ticker("^GSPC")
 price_history = ticker.history(period="max")
