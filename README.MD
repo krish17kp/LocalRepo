@@ -1,4 +1,6 @@
 # THIS IS MY LOCAL REPO
 Stock Market Prediction Model
-#Credit - Krish Parekh
-#         Parth Mangrulkar
+<br>
+# Credit - Krish Parekh
+<br>
+#        - Parth Mangrulkar
