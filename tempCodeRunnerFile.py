@@ -60,3 +60,13 @@ else:
     plt.legend()
     plt.tight_layout()
     plt.show()
+
+# Calculate daily cumulative return
+price_history['Cumulative Return'] = price_history['Close'] / price_history['Close'].iloc[0] - 1
+
+# Plot cumulative return
+price_history['Cumulative Return'].plot(title=f'Cumulative Return for {ticker}')
+plt.xlabel('Date')
+plt.ylabel('Cumulative Return')
+plt.grid(True)
+plt.show()
