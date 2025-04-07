@@ -70,3 +70,16 @@ plt.xlabel('Date')
 plt.ylabel('Cumulative Return')
 plt.grid(True)
 plt.show()
+
+# Volatility rolling std
+price_history['Daily Return'] = price_history['Close'].pct_change()
+
+# Step 2: Calculate 20-day Rolling Standard Deviation (Volatility)
+price_history['Rolling Volatility'] = price_history['Daily Return'].rolling(window=20).std()
+
+# Step 3: Plot it
+price_history['Rolling Volatility'].plot(title='20-Day Rolling Volatility (Risk)')
+plt.xlabel('Date')
+plt.ylabel('Volatility')
+plt.grid(True)
+plt.show()
