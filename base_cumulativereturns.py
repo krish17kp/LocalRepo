@@ -83,3 +83,20 @@ plt.xlabel('Date')
 plt.ylabel('Volatility')
 plt.grid(True)
 plt.show()
+
+#moving average
+# Step 1: Calculate Moving Averages
+price_history['MA20'] = price_history['Close'].rolling(window=20).mean()
+price_history['MA50'] = price_history['Close'].rolling(window=50).mean()
+
+# Step 2: Plot them with the original 'Close' price
+plt.figure(figsize=(14, 6))
+plt.plot(price_history['Close'], label='Close Price')
+plt.plot(price_history['MA20'], label='20-Day MA')
+plt.plot(price_history['MA50'], label='50-Day MA')
+plt.title('Tata Motors Stock with Moving Averages')
+plt.xlabel('Date')
+plt.ylabel('Price')
+plt.legend()
+plt.grid(True)
+plt.show()
