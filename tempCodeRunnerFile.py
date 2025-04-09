@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy.stats as stats
+from sklearn.model_selection import KFold, cross_val_score
+from sklearn.linear_model import Lasso
+from sklearn.preprocessing import StandardScaler
 
 def get_up_or_down(df):
     df['gain'] = 0.0
@@ -53,7 +56,7 @@ else:
     price_history["RSI"] = 100 - (100 / (1 + price_history["rs"]))
 
 
-    # Financial data: today's price, EPS, Book Value, then calculate ratios
+    # Financial data
     price_today = stock.history(period="1d")["Close"].iloc[0]
     eps = info.get("trailingEps", None)
     book_value = info.get("bookValue", None)
@@ -68,7 +71,7 @@ else:
     else:
         pb_ratio = "N/A"
 
-    # Create a summary DataFrame
+    # Summary DataFrame
     summary_data = {
         "Stock Ticker": [ticker],
         "Latest Price": [price_today],
@@ -82,11 +85,9 @@ else:
     }
     result_df = pd.DataFrame(summary_data)
 
-    # Save the summary to CSV
     file_name = ticker + "_summary.csv"
     result_df.to_csv(file_name, index=False)
 
-    # Print the summary
     print("Summary for stock:")
     print(ticker)
     print("Latest Price:")
@@ -106,9 +107,29 @@ else:
     print("Data saved to CSV file:")
     print(file_name)
 
-    # --- PLOTTING SECTION ---
+    # --- K-Fold with Lasso Regression ---
+    model_data = price_history[['Open', 'High', 'Low', 'Volume', 'Close']].copy()
+    model_data['Next_Close'] = model_data['Close'].shift(-1)
+    model_data.dropna(inplace=True)
 
-    # Plot Opening and Closing Prices
+    X = model_data[['Open', 'High', 'Low', 'Volume']]
+    y = model_data['Next_Close']
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    lasso = Lasso(alpha=0.1)
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    scores = cross_val_score(lasso, X_scaled, y, cv=kf, scoring='neg_mean_squared_error')
+    rmse_scores = np.sqrt(-scores)
+
+    print("Lasso Regression with K-Fold Cross Validation")
+    print("RMSE scores for each fold:")
+    print(rmse_scores)
+    print("Average RMSE:")
+    print(np.mean(rmse_scores))
+
+    # --- PLOTTING SECTION ---
     plt.figure(figsize=(12, 6))
     plt.plot(price_history.index, price_history["Open"], label="Opening Price", color="orange")
     plt.plot(price_history.index, price_history["Close"], label="Closing Price", color="blue")
@@ -120,7 +141,6 @@ else:
     plt.tight_layout()
     plt.show()
 
-    # Plot Daily Returns
     plt.figure(figsize=(10, 4))
     plt.plot(price_history.index, price_history["Returns"], label="Daily Returns")
     plt.axhline(0, color="red", linestyle="--")
@@ -132,7 +152,6 @@ else:
     plt.tight_layout()
     plt.show()
 
-    # Plot Cumulative Return
     price_history["Cumulative Return"].plot(title="Cumulative Return for " + ticker)
     plt.xlabel("Date")
     plt.ylabel("Cumulative Return")
@@ -140,7 +159,6 @@ else:
     plt.tight_layout()
     plt.show()
 
-    # Plot Rolling Volatility
     price_history["Rolling Volatility"].plot(title="20-Day Rolling Volatility (Risk) for " + ticker)
     plt.xlabel("Date")
     plt.ylabel("Volatility")
@@ -148,7 +166,6 @@ else:
     plt.tight_layout()
     plt.show()
 
-    # Plot Moving Averages
     plt.figure(figsize=(14, 6))
     plt.plot(price_history["Close"], label="Close Price")
     plt.plot(price_history["MA20"], label="20-Day MA")
@@ -161,7 +178,6 @@ else:
     plt.tight_layout()
     plt.show()
 
-    # Plot RSI
     plt.figure(figsize=(12, 5))
     price_history["RSI"].plot()
     plt.axhline(70, color="red", linestyle="--", label="Overbought (70)")
