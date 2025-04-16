@@ -1,6 +1,3 @@
-# ------------------------------
-#        ALL IMPORTS
-# ------------------------------
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -16,9 +13,9 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.tsa.stattools import adfuller
 import datetime
 
-# ------------------------------
+
 #   HELPER FUNCTION: RSI
-# ------------------------------
+
 def get_up_or_down(df):
     df['gain'] = 0.0
     df['loss'] = 0.0
@@ -31,9 +28,9 @@ def get_up_or_down(df):
             df.at[df.index[i], 'loss'] = prev_close - current_close
     return df
 
-# ------------------------------
+
 #     STOCK DATA & PREPROCESSING
-# ------------------------------
+
 ticker = "TATAMOTORS.NS"
 stock = yf.Ticker(ticker)
 info = stock.info
@@ -49,9 +46,9 @@ df["Target"] = (df["Tomorrow"] > df["Close"]).astype(int)
 # Limit data to a specific period and drop NaN rows
 df = df.loc["1990-01-01":].copy()
 
-# ------------------------------
+
 #     TECHNICAL INDICATORS
-# ------------------------------
+
 df["Returns"] = df["Close"].pct_change()
 df["Cumulative Return"] = df["Close"] / df["Close"].iloc[0] - 1
 df["Daily Return"] = df["Close"].pct_change()
@@ -67,9 +64,9 @@ df["rs"] = df["avg_gain"] / df["avg_loss"]
 df["RSI"] = 100 - (100 / (1 + df["rs"]))
 df.dropna(inplace=True)
 
-# ------------------------------
+
 #     FINANCIAL RATIOS & SUMMARY
-# ------------------------------
+
 price_today = stock.history(period="1d")["Close"].iloc[0]
 eps = info.get("trailingEps", None)
 book_value = info.get("bookValue", None)
@@ -97,9 +94,9 @@ summary_df.to_csv(ticker + "_summary.csv", index=False)
 print("\nStock Summary:")
 print(summary_df)
 
-# ------------------------------
+
 #       LASSO REGRESSION (K-Fold)
-# ------------------------------
+
 model_data = df[['Open', 'High', 'Low', 'Volume', 'Close']].copy()
 model_data['Next_Close'] = model_data['Close'].shift(-1)
 model_data.dropna(inplace=True)
@@ -113,9 +110,9 @@ lasso_scores = cross_val_score(lasso, X_scaled, y, cv=kf, scoring='neg_mean_squa
 print("\nLasso Regression K-Fold RMSEs:", np.sqrt(-lasso_scores))
 print("Average RMSE:", np.mean(np.sqrt(-lasso_scores)))
 
-# ------------------------------
+
 #  LOGISTIC REGRESSION CLASSIFIER (K-Fold)
-# ------------------------------
+
 clf_data = df.copy()
 clf_data["Signal"] = (clf_data["Close"].shift(-1) > clf_data["Close"]).astype(int)
 clf_data.dropna(inplace=True)
@@ -132,9 +129,9 @@ for train_i, test_i in kf_clf.split(X_clf):
 print("\nLogistic Regression K-Fold Precision Scores:", log_precisions)
 print("Average Precision:", np.mean(log_precisions))
 
-# ------------------------------
+
 #    RANDOM FOREST (K-Fold) WITH ADDITIONAL FEATURES
-# ------------------------------
+
 horizons = [2, 5, 60, 250, 1000]
 new_predictors = []
 for h in horizons:
@@ -155,9 +152,9 @@ for train_idx, test_idx in kf_rf.split(X_rf):
 print("\nRandom Forest K-Fold Precision Scores:", rf_precisions)
 print("Average Precision:", np.mean(rf_precisions))
 
-# ------------------------------
+
 #       LINEAR REGRESSION (OLS)
-# ------------------------------
+
 X_lr = df[["Open", "High", "Low", "Volume"]].values
 y_lr = df["Close"].values
 X_train_lr, X_test_lr, y_train_lr, y_test_lr = train_test_split(X_lr, y_lr, test_size=0.2, random_state=0)
@@ -172,9 +169,9 @@ ols_result = sm.OLS(y_test_lr, X_test_lr).fit()
 print("\nOLS Regression Summary:")
 print(ols_result.summary())
 
-# ------------------------------
+
 #            PLOTTING SECTION
-# ------------------------------
+
 plt.figure(figsize=(12, 6))
 plt.plot(df.index, df["Open"], label="Opening Price", color="orange")
 plt.plot(df.index, df["Close"], label="Closing Price", color="blue")
@@ -264,3 +261,34 @@ print(f"The predicted price for tomorrow: {predicted_price}")
 # Compare with today's price
 today_price = prices.iloc[-1]
 print(f"Today's price: {today_price}")
+
+# [KEEPING EVERYTHING FROM LINE 1 TO 263 INTACT — NO CHANGES]
+# Copy your full 263-line script here (as provided above)
+
+# Now ADD this at the end:
+# ------------------------------
+# FINAL MODEL ON COMBINED FEATURES
+# ------------------------------
+
+# Select combined features
+combined_features = df[["Open", "High", "Low", "Close", "Volume", "RSI", "Rolling Volatility", "MA20", "MA50"]].dropna()
+combined_target = df.loc[combined_features.index, "Target"]
+
+# Split data into train and test sets
+X_train_comb, X_test_comb, y_train_comb, y_test_comb = train_test_split(
+    combined_features, combined_target, test_size=0.2, random_state=42
+)
+
+# Train Random Forest on combined features
+combined_model = RandomForestClassifier(n_estimators=200, random_state=42)
+combined_model.fit(X_train_comb, y_train_comb)
+y_pred_comb = combined_model.predict(X_test_comb)
+
+# Evaluate model performance
+accuracy_comb = accuracy_score(y_test_comb, y_pred_comb)
+precision_comb = precision_score(y_test_comb, y_pred_comb)
+
+# Print results
+print("\nFinal Model with Combined Features")
+print("Accuracy:", round(accuracy_comb * 100, 2), "%")
+print("Precision:", round(precision_comb * 100, 2), "%")
