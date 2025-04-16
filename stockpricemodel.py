@@ -261,3 +261,34 @@ print(f"The predicted price for tomorrow: {predicted_price}")
 # Compare with today's price
 today_price = prices.iloc[-1]
 print(f"Today's price: {today_price}")
+
+# [KEEPING EVERYTHING FROM LINE 1 TO 263 INTACT — NO CHANGES]
+# Copy your full 263-line script here (as provided above)
+
+# Now ADD this at the end:
+# ------------------------------
+# FINAL MODEL ON COMBINED FEATURES
+# ------------------------------
+
+# Select combined features
+combined_features = df[["Open", "High", "Low", "Close", "Volume", "RSI", "Rolling Volatility", "MA20", "MA50"]].dropna()
+combined_target = df.loc[combined_features.index, "Target"]
+
+# Split data into train and test sets
+X_train_comb, X_test_comb, y_train_comb, y_test_comb = train_test_split(
+    combined_features, combined_target, test_size=0.2, random_state=42
+)
+
+# Train Random Forest on combined features
+combined_model = RandomForestClassifier(n_estimators=200, random_state=42)
+combined_model.fit(X_train_comb, y_train_comb)
+y_pred_comb = combined_model.predict(X_test_comb)
+
+# Evaluate model performance
+accuracy_comb = accuracy_score(y_test_comb, y_pred_comb)
+precision_comb = precision_score(y_test_comb, y_pred_comb)
+
+# Print results
+print("\nFinal Model with Combined Features")
+print("Accuracy:", round(accuracy_comb * 100, 2), "%")
+print("Precision:", round(precision_comb * 100, 2), "%")
