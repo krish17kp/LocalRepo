@@ -1,6 +1,6 @@
 # Project - Stock Price Prediction and Analysis
 <br>
-# Credits:
+ Credits:
 <br>
 -KRISH PAREKH
 -PARTH MANGRULKAR
