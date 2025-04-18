@@ -1,4 +1,4 @@
-# THIS IS MY LOCAL REPO
+# Project
 Stock Market Prediction Model
 <br>
 # Credit 
