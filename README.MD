@@ -7,5 +7,6 @@
 <br>
 
 Kindly check Fully updated file - stockpricemodel.py
+<br>
 contact@krishparekh261@gmail.com
 
