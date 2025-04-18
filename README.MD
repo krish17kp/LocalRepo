@@ -1,5 +1,5 @@
 # Project
-Stock Market Prediction Model
+Stock Price Prediction and Analysis
 <br>
 # Credit 
 <br>
